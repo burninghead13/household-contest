@@ -1,120 +1,130 @@
-# 🏆 Haushalt Wettbewerb
+# 🏆 Household Contest
 
-Eine selbst gehostete Web-App für den monatlichen Haushaltspunkte-Wettbewerb.  
-Wer am Monatsende die meisten Punkte hat, bekommt ein Essen spendiert!
+A self-hosted web app for a monthly household chores competition.  
+Whoever has the most points at the end of the month wins a free dinner!
 
 ---
 
 ## Features
 
-- **Live-Rangliste** mit Punktestand beider Spieler
-- **Schnelleintrag** – Aufgabe auswählen, Spieler anklicken, fertig
-- **Admin-Bereich** – Aufgaben & Punktwerte frei konfigurieren, Spielernamen & Farben anpassen
-- **Monatsarchiv** – alle vergangenen Wettbewerbe einsehbar
-- **Passwortschutz** – separates App- und Admin-Passwort
-- **Automatischer Monatsreset** – neuer Monat = neue Runde (alte Daten bleiben im Archiv)
+- **Live leaderboard** with point totals for both players
+- **Quick entry** – select a player, pick a task, done
+- **Admin panel** – freely configure tasks & point values, customize player names & colors
+- **Monthly archive** – all past competitions with results
+- **Password protection** – separate app and admin passwords
+- **Automatic monthly reset** – new month = new round (old data stays in the archive)
+- **Language support** – English and German, switchable at any time
 
 ---
 
-## Deployment auf dem Raspberry Pi
+## Deployment on Raspberry Pi (or any Docker host)
 
-### 1. Dateien übertragen
-
-```bash
-# Vom eigenen PC aus (ersetze IP entsprechend)
-scp -r haushalt-app/ tom@<PI-IP>:/opt/haushalt-app
-```
-
-Oder direkt auf dem Pi klonen/erstellen:
+### 1. Transfer files
 
 ```bash
-mkdir -p /opt/haushalt-app
-cd /opt/haushalt-app
-# Dateien hineinkopieren
+# From your local machine (replace IP accordingly)
+scp -r household-contest/ tom@<PI-IP>:/opt/household-contest
 ```
 
-### 2. Passwörter anpassen
+Or directly on the Pi:
 
-In `docker-compose.yml` die drei Werte ändern:
+```bash
+mkdir -p /opt/household-contest
+cd /opt/household-contest
+# Copy files here
+```
+
+### 2. Set your passwords
+
+Edit `docker-compose.yml` and change the three placeholder values:
 
 ```yaml
 environment:
-  - APP_PASSWORD=dein-app-passwort       # für alle Nutzer
-  - ADMIN_PASSWORD=dein-admin-passwort   # nur für dich
-  - SECRET_KEY=langer-zufaelliger-string # z.B. mit: openssl rand -hex 32
+  - APP_PASSWORD=your-app-password        # for all users
+  - ADMIN_PASSWORD=your-admin-password    # for you only
+  - SECRET_KEY=long-random-string         # generate with: openssl rand -hex 32
+  - DEFAULT_LANG=en                       # 'en' for English, 'de' for German
 ```
 
-### 3. Container starten
+### 3. Start the container
 
 ```bash
-cd /opt/haushalt-app
+cd /opt/household-contest
 docker compose up -d --build
 ```
 
-### 4. App aufrufen
+### 4. Open the app
 
-Im Heimnetz erreichbar unter:
+Available in your home network at:
 
 ```
 http://<PI-IP>:8095
 ```
 
-Den Port 8095 kannst du in `docker-compose.yml` beliebig ändern.
+The port `8095` can be changed freely in `docker-compose.yml`.
 
 ---
 
-## Verwaltung
+## Management
 
 ```bash
-# Logs anschauen
+# View logs
 docker compose logs -f haushalt
 
-# Container neustarten
+# Restart container
 docker compose restart haushalt
 
-# Update (nach Änderungen an den Dateien)
+# Update after file changes
 docker compose up -d --build
 
-# Stoppen
+# Stop
 docker compose down
 ```
 
 ---
 
-## Passwörter
+## Passwords
 
-| Passwort | Zugang |
+| Password | Access |
 |---|---|
-| `APP_PASSWORD` | Normale Nutzung (Punkte eintragen, Archiv sehen) |
-| `ADMIN_PASSWORD` | Admin-Bereich (Aufgaben/Spieler verwalten, Einträge löschen) |
+| `APP_PASSWORD` | Normal use (log tasks, view archive) |
+| `ADMIN_PASSWORD` | Admin panel (manage tasks/players, delete entries) |
 
-Der Admin hat automatisch auch vollen App-Zugriff.
+The admin password also grants full app access.
 
 ---
 
-## Daten
+## Data & Backups
 
-Die SQLite-Datenbank liegt im Docker Volume `haushalt-data` und überlebt Container-Neustarts und Updates problemlos.
+The SQLite database lives in the Docker volume `haushalt-data` and survives container restarts and updates.
 
-Backup erstellen:
+Create a backup:
 ```bash
-docker cp haushalt-app:/data/haushalt.db ./haushalt-backup-$(date +%Y%m%d).db
+docker cp haushalt-app:/data/haushalt.db ./household-backup-$(date +%Y%m%d).db
 ```
 
+**Never run `docker compose down -v`** – the `-v` flag deletes volumes including your data.
+
 ---
 
-## Standardmäßig enthaltene Aufgaben
+## Default tasks
 
-| Aufgabe | Punkte |
+| Task | Points |
 |---|---|
-| Staubsaugen | 3 |
-| Wischen | 4 |
-| Abwasch | 2 |
-| Einkaufen | 3 |
-| Wäsche waschen | 3 |
-| Wäsche aufhängen | 2 |
-| Müll rausbringen | 2 |
-| Bad putzen | 4 |
-| Kochen | 3 |
+| Vacuuming | 3 |
+| Mopping | 4 |
+| Dishes | 2 |
+| Grocery shopping | 3 |
+| Doing laundry | 3 |
+| Hanging laundry | 2 |
+| Taking out trash | 2 |
+| Cleaning bathroom | 4 |
+| Cooking | 3 |
 
-Alle Aufgaben können im Admin-Bereich angepasst, deaktiviert oder gelöscht werden.
+All tasks can be adjusted, deactivated, or deleted in the admin panel.
+
+---
+
+## Adding a new language
+
+Open `translations.py` and add a new language block following the existing `de` and `en` entries. Then add the new language option to the switcher in `templates/base.html` and `templates/login.html`.
