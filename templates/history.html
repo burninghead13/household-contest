@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ t('history_title') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ t('history_heading') }}</h1>
+    <p>{{ t('history_subtitle') }}</p>
+</div>
+
+{% if archive %}
+<div style="display: flex; flex-direction: column; gap: 0.75rem;">
+    {% for entry in archive %}
+    {% set max_score = entry['scores'].values() | max if entry['scores'] else 0 %}
+    <a href="/history/{{ entry['month'] }}" style="text-decoration:none; color: inherit;">
+        <div class="card" style="transition: border-color 0.15s; cursor: pointer;"
+             onmouseover="this.style.borderColor='var(--accent)'"
+             onmouseout="this.style.borderColor='var(--border)'">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                <div>
+                    <div style="font-weight: 600;">{{ entry['label'] }}</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">{{ t('history_details') }}</div>
+                </div>
+                <div style="display:flex; gap: 1.5rem;">
+                    {% for player in players %}
+                    {% set pts = entry['scores'][player['id']] %}
+                    <div style="text-align:center;">
+                        <div style="font-size:0.75rem; color:var(--text-muted);">{{ player['name'] }}</div>
+                        <div style="font-size: 1.4rem; font-weight: 800; color: {{ player['color'] }}">
+                            {{ pts }}{% if pts == max_score and pts > 0 %} 👑{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+    {{ t('history_empty') }}
+</div>
+{% endif %}
+{% endblock %}

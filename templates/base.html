@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="{{ get_lang() }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ t('app_name') }}{% endblock %}</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #273549;
+            --border: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text);
+        }
+        .nav-links { display: flex; gap: 0.25rem; align-items: center; }
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.4rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            transition: all 0.15s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: var(--surface2);
+            color: var(--text);
+        }
+        .badge-admin {
+            background: var(--warning);
+            color: #000;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 99px;
+            text-transform: uppercase;
+        }
+        .lang-switcher {
+            display: flex;
+            gap: 2px;
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+        }
+        .lang-switcher a {
+            padding: 2px 8px !important;
+            border-radius: 5px;
+            font-size: 0.78rem !important;
+            font-weight: 600;
+            color: var(--text-muted) !important;
+            background: transparent;
+        }
+        .lang-switcher a.active-lang {
+            background: var(--accent) !important;
+            color: #fff !important;
+        }
+
+        .container { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+        }
+        .card-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        .btn-danger:hover { background: var(--danger); color: #fff; }
+        .btn-ghost { background: var(--surface2); color: var(--text); }
+        .btn-ghost:hover { background: var(--border); }
+        .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.8rem; }
+
+        .score-card {
+            background: var(--surface2);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .score-card.winner { border-color: var(--warning); }
+        .score-avatar {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; font-weight: 700;
+            margin: 0 auto 0.5rem;
+            color: #fff;
+        }
+        .score-name { font-weight: 600; font-size: 1rem; }
+        .score-points { font-size: 2.2rem; font-weight: 800; line-height: 1.1; margin-top: 0.25rem; }
+        .score-label { font-size: 0.75rem; color: var(--text-muted); }
+        .crown { font-size: 1.2rem; }
+
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem; }
+        .task-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 0.75rem;
+            cursor: pointer;
+            text-align: left;
+            color: var(--text);
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.88rem;
+        }
+        .task-btn:hover { background: var(--border); border-color: var(--accent); }
+        .task-btn .pts {
+            margin-left: auto;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 99px;
+            padding: 1px 7px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .feed-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .feed-item:last-child { border-bottom: none; }
+        .feed-dot {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+        .feed-content { flex: 1; min-width: 0; }
+        .feed-main { font-size: 0.88rem; }
+        .feed-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .feed-pts { font-weight: 700; color: var(--success); white-space: nowrap; font-size: 0.9rem; }
+
+        input, select, textarea {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: border-color 0.15s;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+        label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem; }
+        .form-group { margin-bottom: 0.75rem; }
+
+        .alert { padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.9rem; }
+        .alert-error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+        .alert-success { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 420px;
+        }
+        .modal h3 { font-size: 1.1rem; margin-bottom: 1rem; }
+        .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; }
+
+        .page-header { margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 1.5rem; font-weight: 700; }
+        .page-header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th { text-align: left; padding: 0.5rem 0.75rem; color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+        tr:last-child td { border-bottom: none; }
+
+        .tag { display: inline-flex; align-items: center; background: var(--surface2); border-radius: 99px; padding: 2px 10px; font-size: 0.78rem; font-weight: 500; }
+        .tag-green { background: rgba(34,197,94,0.15); color: #86efac; }
+        .tag-gray { background: var(--surface2); color: var(--text-muted); }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/" class="nav-brand">🏆 {{ t('app_name') }}</a>
+    <div class="nav-links">
+        <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>{{ t('nav_overview') }}</a>
+        <a href="/history" {% if request.endpoint == 'history' %}class="active"{% endif %}>{{ t('nav_archive') }}</a>
+        {% if is_admin %}
+        <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %}>
+            {{ t('nav_admin') }} <span class="badge-admin">⚙</span>
+        </a>
+        {% endif %}
+        <div class="lang-switcher">
+            <a href="/set_lang/de" {% if get_lang() == 'de' %}class="active-lang"{% endif %}>DE</a>
+            <a href="/set_lang/en" {% if get_lang() == 'en' %}class="active-lang"{% endif %}>EN</a>
+        </div>
+        <a href="/logout">{{ t('logout') }}</a>
+    </div>
+</nav>
+
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

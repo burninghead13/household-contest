@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}{{ t('nav_overview') }} – {{ month_label }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🏆 {{ month_label }}</h1>
+    <p>{{ t('index_subtitle') }}</p>
+</div>
+
+<div class="grid-2" style="margin-bottom: 1.25rem;">
+    {% set max_score = scores.values() | max if scores else 0 %}
+    {% for player in players %}
+    {% set pts = scores[player['id']] %}
+    <div class="score-card {% if pts == max_score and pts > 0 %}winner{% endif %}">
+        {% if pts == max_score and pts > 0 %}<div class="crown">👑</div>{% endif %}
+        <div class="score-avatar" style="background: {{ player['color'] }}">
+            {{ player['name'][0] | upper }}
+        </div>
+        <div class="score-name">{{ player['name'] }}</div>
+        <div class="score-points" style="color: {{ player['color'] }}">{{ pts }}</div>
+        <div class="score-label">{{ t('index_points') }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card" style="margin-bottom: 1.25rem;">
+    <div class="card-title">{{ t('index_add_task') }}</div>
+
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+        {% for player in players %}
+        <button class="btn btn-ghost" id="btn-{{ player['id'] }}"
+                onclick="selectPlayer({{ player['id'] }}, '{{ player['name'] }}', '{{ player['color'] }}')"
+                style="border: 2px solid transparent;">
+            <span style="width:10px;height:10px;border-radius:50%;background:{{ player['color'] }};display:inline-block;"></span>
+            {{ player['name'] }}
+        </button>
+        {% endfor %}
+    </div>
+
+    <div id="task-section" style="display:none;">
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom: 0.5rem;">
+            {{ t('index_select_task_for') }} <strong id="selected-name"></strong>:
+        </div>
+        <div class="task-grid" id="task-grid">
+            {% for task in tasks %}
+            <button class="task-btn" onclick="quickAdd({{ task['id'] }})">
+                <span>{{ task['icon'] }}</span>
+                <span>{{ task['name'] }}</span>
+                <span class="pts">+{{ task['points'] }}</span>
+            </button>
+            {% endfor %}
+        </div>
+
+        <form id="add-form" method="POST" action="/add_entry" style="display:none;">
+            <input type="hidden" name="player_id" id="f-player">
+            <input type="hidden" name="task_id" id="f-task">
+            <input type="hidden" name="note" id="f-note">
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>{{ t('index_recent') }}</span>
+        <span style="color:var(--text-muted); font-size:0.8rem;">{{ t('index_this_month') }}</span>
+    </div>
+
+    {% if recent %}
+    <div>
+        {% for e in recent %}
+        <div class="feed-item">
+            <div class="feed-dot" style="background: {{ e['player_color'] }}">{{ e['task_icon'] }}</div>
+            <div class="feed-content">
+                <div class="feed-main">
+                    <strong>{{ e['player_name'] }}</strong> – {{ e['task_name'] }}
+                    {% if e['note'] %}<span style="color:var(--text-muted)"> · {{ e['note'] }}</span>{% endif %}
+                </div>
+                <div class="feed-meta">{{ e['created_at'][:16] }}</div>
+            </div>
+            <div class="feed-pts">+{{ e['points'] }}</div>
+            {% if is_admin %}
+            <form method="POST" action="/delete_entry/{{ e['id'] }}" style="margin:0;"
+                  onsubmit="return confirm('{{ t('confirm_delete_entry') }}')">
+                <button type="submit" class="btn btn-danger btn-sm">✕</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding: 2rem; color: var(--text-muted);">
+        {{ t('index_no_entries') }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedPlayer = null;
+function selectPlayer(id, name, color) {
+    selectedPlayer = id;
+    document.getElementById('selected-name').textContent = name;
+    document.getElementById('task-section').style.display = 'block';
+    document.querySelectorAll('[id^="btn-"]').forEach(b => {
+        b.style.borderColor = 'transparent';
+        b.style.background = '';
+    });
+    const btn = document.getElementById('btn-' + id);
+    btn.style.borderColor = color;
+    btn.style.background = color + '22';
+}
+function quickAdd(taskId) {
+    if (!selectedPlayer) return;
+    document.getElementById('f-player').value = selectedPlayer;
+    document.getElementById('f-task').value = taskId;
+    document.getElementById('add-form').submit();
+}
+</script>
+{% endblock %}

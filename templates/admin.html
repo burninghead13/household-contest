@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ t('admin_title') }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ t('admin_heading') }}</h1>
+    <p>{{ t('admin_subtitle') }}</p>
+</div>
+
+<div class="card" style="margin-bottom: 1.25rem;">
+    <div class="card-title">{{ t('admin_players') }}</div>
+    <div class="grid-2">
+        {% for player in players %}
+        <div style="background: var(--surface2); border-radius: 8px; padding: 1rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+                <div style="width:32px;height:32px;border-radius:50%;background:{{ player['color'] }};
+                            display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">
+                    {{ player['name'][0] | upper }}
+                </div>
+                <strong>{{ player['name'] }}</strong>
+            </div>
+            <form method="POST" action="/admin/player/edit/{{ player['id'] }}">
+                <div class="form-group">
+                    <label>{{ t('admin_player_name') }}</label>
+                    <input type="text" name="name" value="{{ player['name'] }}" required>
+                </div>
+                <div class="form-group">
+                    <label>{{ t('admin_player_color') }}</label>
+                    <input type="color" name="color" value="{{ player['color'] }}"
+                           style="height:38px; cursor:pointer; padding: 2px 4px;">
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">{{ t('save') }}</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 1.25rem;">
+    <div class="card-title">{{ t('admin_tasks_add') }}</div>
+    <form method="POST" action="/admin/task/add">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 60px auto; gap: 0.5rem; align-items: end;">
+            <div>
+                <label>{{ t('admin_task_name') }}</label>
+                <input type="text" name="name" placeholder="{{ t('admin_task_name_placeholder') }}" required>
+            </div>
+            <div>
+                <label>{{ t('admin_task_points') }}</label>
+                <input type="number" name="points" value="2" min="1" max="99">
+            </div>
+            <div>
+                <label>{{ t('admin_task_icon') }}</label>
+                <input type="text" name="icon" value="🏠" maxlength="4">
+            </div>
+            <div>
+                <label>&nbsp;</label>
+                <button type="submit" class="btn btn-primary">+ {{ t('add') }}</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-title">{{ t('admin_tasks_manage') }}</div>
+    <table>
+        <thead>
+            <tr>
+                <th>{{ t('admin_task_icon') }}</th>
+                <th>{{ t('admin_task_name') }}</th>
+                <th>{{ t('admin_task_points') }}</th>
+                <th>{{ t('admin_task_status') }}</th>
+                <th>{{ t('admin_task_actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td style="font-size: 1.2rem;">{{ task['icon'] }}</td>
+                <td>{{ task['name'] }}</td>
+                <td><strong style="color:var(--accent)">{{ task['points'] }}</strong></td>
+                <td>
+                    <span class="tag {% if task['active'] %}tag-green{% else %}tag-gray{% endif %}">
+                        {% if task['active'] %}{{ t('admin_task_active') }}{% else %}{{ t('admin_task_inactive') }}{% endif %}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-ghost btn-sm"
+                            onclick="openEdit({{ task['id'] }}, '{{ task['name'] | replace("'", "\\'") }}', {{ task['points'] }}, '{{ task['icon'] }}', {{ task['active'] }})">
+                        {{ t('edit') }}
+                    </button>
+                    <form method="POST" action="/admin/task/delete/{{ task['id'] }}" style="display:inline;"
+                          onsubmit="return confirm('{{ t('confirm_delete_task') }}')">
+                        <button type="submit" class="btn btn-danger btn-sm">{{ t('delete') }}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="modal-overlay" id="edit-modal">
+    <div class="modal">
+        <h3>{{ t('admin_edit_task') }}</h3>
+        <form method="POST" id="edit-form">
+            <div class="form-group">
+                <label>{{ t('admin_task_name') }}</label>
+                <input type="text" name="name" id="edit-name" required>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 80px; gap: 0.5rem;">
+                <div class="form-group">
+                    <label>{{ t('admin_task_points') }}</label>
+                    <input type="number" name="points" id="edit-points" min="1" max="99">
+                </div>
+                <div class="form-group">
+                    <label>{{ t('admin_task_icon') }}</label>
+                    <input type="text" name="icon" id="edit-icon" maxlength="4">
+                </div>
+            </div>
+            <div class="form-group">
+                <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                    <input type="checkbox" name="active" id="edit-active" style="width:auto;">
+                    {{ t('admin_task_active_label') }}
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" onclick="closeEdit()">{{ t('cancel') }}</button>
+                <button type="submit" class="btn btn-primary">{{ t('save') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openEdit(id, name, points, icon, active) {
+    document.getElementById('edit-form').action = '/admin/task/edit/' + id;
+    document.getElementById('edit-name').value = name;
+    document.getElementById('edit-points').value = points;
+    document.getElementById('edit-icon').value = icon;
+    document.getElementById('edit-active').checked = active == 1;
+    document.getElementById('edit-modal').classList.add('open');
+}
+function closeEdit() {
+    document.getElementById('edit-modal').classList.remove('open');
+}
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeEdit();
+});
+</script>
+{% endblock %}

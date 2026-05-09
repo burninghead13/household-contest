@@ -1,0 +1,22 @@
+services:
+  haushalt:
+    build: .
+    container_name: haushalt-app
+    restart: unless-stopped
+    ports:
+      - "8095:5000"
+    volumes:
+      - haushalt-data:/data
+    environment:
+      # Password for regular users
+      - APP_PASSWORD=haushalt
+      # Password for admin access (manage tasks & players)
+      - ADMIN_PASSWORD=admin123
+      # Secret key for sessions – generate with: openssl rand -hex 32
+      - SECRET_KEY=changeme-use-a-long-random-string
+      # Default language: 'de' for German, 'en' for English
+      - DEFAULT_LANG=en
+      - DB_PATH=/data/haushalt.db
+
+volumes:
+  haushalt-data:

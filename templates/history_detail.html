@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ label }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="/history" style="color:var(--text-muted); text-decoration:none; font-size:0.9rem;">{{ t('back') }}</a>
+    <h1 style="margin-top: 0.25rem;">{{ label }}</h1>
+</div>
+
+{% set max_score = scores.values() | max if scores else 0 %}
+<div class="grid-2" style="margin-bottom: 1.25rem;">
+    {% for player in players %}
+    {% set pts = scores[player['id']] %}
+    <div class="score-card {% if pts == max_score and pts > 0 %}winner{% endif %}">
+        {% if pts == max_score and pts > 0 %}<div class="crown">👑</div>{% endif %}
+        <div class="score-avatar" style="background: {{ player['color'] }}">{{ player['name'][0] | upper }}</div>
+        <div class="score-name">{{ player['name'] }}</div>
+        <div class="score-points" style="color: {{ player['color'] }}">{{ pts }}</div>
+        <div class="score-label">{{ t('history_detail_total') }}</div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <div class="card-title">{{ t('history_detail_all_entries') }}</div>
+    {% if entries %}
+    {% for e in entries %}
+    <div class="feed-item">
+        <div class="feed-dot" style="background: {{ e['player_color'] }}">{{ e['task_icon'] }}</div>
+        <div class="feed-content">
+            <div class="feed-main">
+                <strong>{{ e['player_name'] }}</strong> – {{ e['task_name'] }}
+                {% if e['note'] %}<span style="color:var(--text-muted)"> · {{ e['note'] }}</span>{% endif %}
+            </div>
+            <div class="feed-meta">{{ e['created_at'][:16] }}</div>
+        </div>
+        <div class="feed-pts">+{{ e['points'] }}</div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center; padding: 2rem; color: var(--text-muted);">{{ t('history_detail_no_entries') }}</div>
+    {% endif %}
+</div>
+{% endblock %}
