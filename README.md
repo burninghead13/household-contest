@@ -22,8 +22,8 @@ Whoever has the most points at the end of the month wins a free dinner!
 ### 1. Transfer files
 
 ```bash
-# From your local machine (replace IP accordingly)
-scp -r household-contest/ tom@<PI-IP>:/opt/household-contest
+# From your local machine (replace name and IP accordingly)
+scp -r household-contest/ name@<PI-IP>:/opt/household-contest
 ```
 
 Or directly on the Pi:
