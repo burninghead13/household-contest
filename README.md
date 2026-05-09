@@ -1,7 +1,9 @@
 # 🏆 Household Contest
 
+This project was made with help of claude.ai.
+
 A self-hosted web app for a monthly household chores competition.  
-Whoever has the most points at the end of the month wins a free dinner!
+Whoever has the most points at the end of the month wins a free dinner from the loser!
 
 ---
 
